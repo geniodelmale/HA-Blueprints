@@ -20,7 +20,7 @@ actions:
   - target:
       entity_id: !input climate_entity
     data:
-      hvac_mode: "{{ state_attr('!input climate_entity', 'last_on_operation') }}"
+      hvac_mode: "{{ state_attr(climate_entity, 'last_on_operation') }}"
     action: climate.set_hvac_mode
   - if:
       - condition: template
