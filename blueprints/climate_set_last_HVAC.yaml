@@ -1,0 +1,61 @@
+blueprint:
+  name: Climate Set Last HVAC Mode
+  description: Set Last HVAC Mode when turning on the climate device, based on last operation and current month.
+  domain: automation
+  input:
+    climate_entity:
+      name: Climate Entity
+      description: The climate entity to monitor.
+      selector:
+        entity:
+          domain: climate
+
+triggers:
+  - entity_id:
+      - !input climate_entity
+    to: "on"
+    trigger: state
+conditions: []
+actions:
+  - target:
+      entity_id: !input climate_entity
+    data:
+      hvac_mode: "{{ state_attr(!input climate_entity, 'last_on_operation') }}"
+    action: climate.set_hvac_mode
+  - if:
+      - condition: template
+        value_template: "{{ now().month >= 10 or now().month <= 4 }}"
+        alias: Mesi da ottobre ad aprile
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: !input climate_entity
+            state:
+              - heat
+    then:
+      - action: climate.set_temperature
+        metadata: {}
+        target:
+          entity_id: !input climate_entity
+        data:
+          temperature: 26
+          hvac_mode: heat
+  - if:
+      - condition: template
+        value_template: "{{ now().month >= 5 or now().month <= 8 }}"
+        alias: Mesi da maggio a settembre
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: !input climate_entity
+            state:
+              - cool
+    then:
+      - action: climate.set_temperature
+        metadata: {}
+        target:
+          entity_id: !input climate_entity
+        data:
+          temperature: 26
+          hvac_mode: cool
+mode: single
