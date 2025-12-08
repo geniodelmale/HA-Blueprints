@@ -1,0 +1,5 @@
+{
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/home-assistant/core/main/homeassistant/components/blueprint/blueprint_schema.yaml": "blueprints/**/**/*.yaml"
+    }
+}
