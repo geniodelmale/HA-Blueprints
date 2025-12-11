@@ -7,4 +7,4 @@ Lorenzo's Blueprints for Home Assistant:
 
     - Input: Climate Entity
 
-[**♨️ Heating Blueprint**](https://github.com/geniodelmale/HEATHER-Home-Heating-Control-for-Home-Assistant-): This is a complex Blueprint, derived from Andy Simmons work. It's on a separate Repo with all the instructions.
+[**♨️ Heating Blueprint**](https://github.com/geniodelmale/HEATHER-Home-Heating-Control-for-Home-Assistant-): This is a complex Blueprint, derived from Andy Simmons work. It's on a separate Repo with all the instructions, due to its complexity.
