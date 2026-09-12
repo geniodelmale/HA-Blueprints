@@ -1,23 +1,14 @@
 blueprint:
   name: Messaggio con attesa tra duplicati
   description: >-
-    Invia i messaggi nuovi immediatamente e reinvia un messaggio uguale all'ultimo
-    solo dopo il numero di ore configurato. Richiede un helper input_text per
+    Script richiamabile passando il messaggio nel parametro message. Invia i
+    messaggi nuovi immediatamente e reinvia un messaggio uguale all'ultimo solo
+    dopo il numero di ore configurato. Richiede un helper input_text per
     memorizzare l'ultimo messaggio inviato e un helper input_datetime con data e
     ora per memorizzare l'ultimo invio. Nell'azione di notifica usare la variabile
     {{ message }} come testo del messaggio.
-  domain: automation
+  domain: script
   input:
-    message_trigger:
-      name: Trigger del messaggio
-      description: Evento o cambiamento di stato che rende disponibile il messaggio.
-      selector:
-        trigger:
-    message_template:
-      name: Messaggio
-      description: Template che ricava il messaggio dal trigger.
-      selector:
-        template:
     wait_hours:
       name: Ore di attesa
       description: Ore da attendere prima di inviare nuovamente lo stesso messaggio.
@@ -49,13 +40,17 @@ blueprint:
         entity:
           domain: input_datetime
 
-triggers: !input message_trigger
+fields:
+  message:
+    name: Messaggio
+    description: Testo da inviare e confrontare con l'ultimo messaggio inviato.
+    required: true
+    selector:
+      text:
+        multiline: true
 
-conditions: []
-
-actions:
+sequence:
   - variables:
-      message: !input message_template
       wait_hours: !input wait_hours
       last_message_entity: !input last_message_helper
       last_sent_entity: !input last_sent_helper
