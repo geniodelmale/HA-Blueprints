@@ -1,0 +1,84 @@
+blueprint:
+  name: Messaggio con attesa tra duplicati
+  description: >-
+    Invia i messaggi nuovi immediatamente e reinvia un messaggio uguale all'ultimo
+    solo dopo il numero di ore configurato. Richiede un helper input_text per
+    memorizzare l'ultimo messaggio inviato e un helper input_datetime con data e
+    ora per memorizzare l'ultimo invio. Nell'azione di notifica usare la variabile
+    {{ message }} come testo del messaggio.
+  domain: automation
+  input:
+    message_trigger:
+      name: Trigger del messaggio
+      description: Evento o cambiamento di stato che rende disponibile il messaggio.
+      selector:
+        trigger:
+    message_template:
+      name: Messaggio
+      description: Template che ricava il messaggio dal trigger.
+      selector:
+        template:
+    wait_hours:
+      name: Ore di attesa
+      description: Ore da attendere prima di inviare nuovamente lo stesso messaggio.
+      default: 24
+      selector:
+        number:
+          min: 0
+          max: 24
+          step: 1
+          unit_of_measurement: h
+          mode: slider
+    notification_action:
+      name: Destinazione del messaggio
+      description: >-
+        Azione che invia il messaggio, ad esempio Telegram. Nel campo del testo
+        inserire {{ message }}.
+      selector:
+        action:
+    last_message_helper:
+      name: Helper ultimo messaggio
+      description: Helper input_text usato per conservare l'ultimo messaggio inviato.
+      selector:
+        entity:
+          domain: input_text
+    last_sent_helper:
+      name: Helper data e ora ultimo invio
+      description: Helper input_datetime configurato con data e ora.
+      selector:
+        entity:
+          domain: input_datetime
+
+triggers: !input message_trigger
+
+conditions: []
+
+actions:
+  - variables:
+      message: !input message_template
+      wait_hours: !input wait_hours
+      last_message_entity: !input last_message_helper
+      last_sent_entity: !input last_sent_helper
+  - condition: template
+    value_template: "{{ message | string | length > 0 }}"
+  - condition: template
+    value_template: >-
+      {% set previous_message = states(last_message_entity) %}
+      {% set previous_sent = as_timestamp(states(last_sent_entity), 0) %}
+      {% set elapsed_seconds = as_timestamp(now()) - previous_sent %}
+      {{ previous_message != message or elapsed_seconds >= (wait_hours | float * 3600) }}
+  - choose: []
+    default: !input notification_action
+  - action: input_text.set_value
+    target:
+      entity_id: "{{ last_message_entity }}"
+    data:
+      value: "{{ message }}"
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: "{{ last_sent_entity }}"
+    data:
+      datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+mode: queued
+max: 10
